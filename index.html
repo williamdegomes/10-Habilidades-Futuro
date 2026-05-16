@@ -10,40 +10,94 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Merriweather:ital,wght@0,300;1,300&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #fafaf9; }
         .font-serif-title { font-family: 'Merriweather', serif; }
-        .chart-container { position: relative; width: 100%; max-width: 800px; margin: 0 auto; height: 350px; max-height: 50vh; }
+        .chart-container { position: relative; width: 100%; height: 300px; }
         .fade-in { animation: fadeIn 0.4s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #57534e; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #78716c; }
+
+        /* Sidebar */
+        #sidebar {
+            position: fixed; top: 0; left: -280px; width: 280px; height: 100vh;
+            background: #1c1917; z-index: 200; transition: left 0.3s ease;
+            overflow-y: auto; display: flex; flex-direction: column;
+        }
+        #sidebar.open { left: 0; }
+        #overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.5); z-index: 199;
+        }
+        #overlay.show { display: block; }
+
+        /* Desktop: sidebar sempre visível */
+        @media (min-width: 1024px) {
+            #sidebar { position: fixed; left: 0; }
+            #overlay { display: none !important; }
+            #menu-btn { display: none; }
+            #main-wrapper { margin-left: 280px; }
+        }
     </style>
 </head>
-<body class="text-stone-800 h-screen overflow-hidden flex bg-stone-50">
+<body class="bg-stone-50 text-stone-800">
 
-<aside class="w-72 bg-stone-900 text-stone-300 flex flex-col h-full shadow-2xl z-10">
-    <div class="p-6 border-b border-stone-800">
-        <h1 class="font-serif-title text-2xl text-white tracking-tight mb-1">O Arquiteto</h1>
-        <p class="text-xs text-stone-400 uppercase tracking-widest font-semibold">Construtor do Conhecimento</p>
+<!-- Overlay mobile -->
+<div id="overlay" onclick="closeSidebar()"></div>
+
+<!-- Sidebar -->
+<aside id="sidebar">
+    <div class="p-6 border-b border-stone-800 flex items-center justify-between">
+        <div>
+            <h1 class="font-serif-title text-xl text-white tracking-tight mb-1">O Arquiteto</h1>
+            <p class="text-xs text-stone-400 uppercase tracking-widest font-semibold">Construtor do Conhecimento</p>
+        </div>
+        <button onclick="closeSidebar()" class="lg:hidden text-stone-400 hover:text-white text-2xl leading-none">✕</button>
     </div>
     <div class="p-4">
         <p class="text-xs text-stone-500 mb-3 uppercase tracking-wider font-bold">Menu Principal</p>
-        <button onclick="loadOverview()" id="btn-overview" class="w-full text-left px-4 py-3 rounded-lg mb-4 bg-blue-600 text-white font-medium transition-colors">
+        <button onclick="loadOverview(); closeSidebar();" id="btn-overview"
+            class="w-full text-left px-4 py-3 rounded-lg mb-4 bg-blue-600 text-white font-medium transition-colors text-sm">
             Visão Geral &amp; Dados
         </button>
         <p class="text-xs text-stone-500 mb-2 uppercase tracking-wider font-bold">As 10 Habilidades (WEF)</p>
     </div>
-    <nav class="flex-1 overflow-y-auto px-4 pb-6 space-y-1" id="skill-nav"></nav>
+    <nav class="flex-1 px-4 pb-6 space-y-1" id="skill-nav"></nav>
 </aside>
 
-<main class="flex-1 h-full overflow-y-auto bg-stone-50 relative">
-    <div class="max-w-5xl mx-auto p-8 md:p-12 pb-24" id="main-content"></div>
-</main>
+<!-- Main wrapper -->
+<div id="main-wrapper">
+    <!-- Top bar mobile -->
+    <div class="lg:hidden sticky top-0 z-100 bg-stone-900 px-4 py-3 flex items-center gap-3 shadow-md">
+        <button id="menu-btn" onclick="openSidebar()"
+            class="text-white text-2xl leading-none w-10 h-10 flex items-center justify-center rounded-lg hover:bg-stone-700 transition-colors">
+            ☰
+        </button>
+        <div>
+            <div class="text-xs text-lime-400 uppercase tracking-widest font-bold leading-none mb-0.5">O Arquiteto</div>
+            <div class="text-white font-bold text-sm" id="mobile-title">Habilidades 2030</div>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <main class="min-h-screen">
+        <div class="max-w-5xl mx-auto px-4 py-8 md:px-8 md:py-12 pb-24" id="main-content"></div>
+    </main>
+</div>
 
 <script>
+// Sidebar controls
+function openSidebar() {
+    document.getElementById('sidebar').classList.add('open');
+    document.getElementById('overlay').classList.add('show');
+}
+function closeSidebar() {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('overlay').classList.remove('show');
+}
+
 const overviewData = {
-    intro: `Olá! Sou O Arquiteto. O Construtor do Conhecimento.<br><br>Para que uma liderança seja sólida, ela precisa primeiro <b>dar nome aos bois</b>. Não adianta falar de tendências se não soubermos exatamente o que cada habilidade significa no chão da fábrica ou na tela do computador.<br><br>Explore os dados comparativos abaixo e mergulhe em cada habilidade na barra lateral para ver a definição técnica simplificada e meu método de ensino.`,
-    labels: ['IA & Big Data','Cibersegurança','Literacia Tech','Pensamento Criativo','Resiliência','Aprendizado Contínuo','Liderança','Gestão de Talentos','Pensamento Analítico','Gestão Ambiental'],
+    intro: `Olá! Sou O Arquiteto. O Construtor do Conhecimento.<br><br>Para que uma liderança seja sólida, ela precisa primeiro <b>dar nome aos bois</b>. Não adianta falar de tendências se não soubermos exatamente o que cada habilidade significa no chão da fábrica ou na tela do computador.<br><br>Explore os dados comparativos abaixo e mergulhe em cada habilidade no menu para ver a definição técnica simplificada e meu método de ensino.`,
+    labels: ['IA & Big Data','Cibersegurança','Literacia Tech','Pensamento Criativo','Resiliência','Aprendizado Contínuo','Liderança','Gest. Talentos','Pens. Analítico','Gest. Ambiental'],
     brScore: [7.5, 6.0, 7.0, 8.0, 9.5, 8.5, 8.0, 7.5, 7.0, 6.5],
     usScore: [9.5, 8.5, 9.0, 8.0, 8.0, 8.5, 8.5, 9.0, 9.0, 7.5]
 };
@@ -172,9 +226,9 @@ function renderSidebar() {
     const nav = document.getElementById('skill-nav');
     skillsData.forEach(skill => {
         const btn = document.createElement('button');
-        btn.className = 'w-full text-left px-4 py-2 rounded-lg text-sm text-stone-400 hover:bg-stone-800 hover:text-white transition-colors flex items-center gap-3 group';
-        btn.innerHTML = `<span class="text-lg">${skill.icon}</span> <span class="truncate">${skill.name}</span>`;
-        btn.onclick = () => loadSkill(skill.id);
+        btn.className = 'w-full text-left px-4 py-2 rounded-lg text-sm text-stone-400 hover:bg-stone-800 hover:text-white transition-colors flex items-center gap-3';
+        btn.innerHTML = `<span class="text-lg">${skill.icon}</span><span class="truncate">${skill.name}</span>`;
+        btn.onclick = () => { loadSkill(skill.id); closeSidebar(); };
         nav.appendChild(btn);
     });
 }
@@ -198,30 +252,36 @@ function setActiveButton(id) {
     }
 }
 
+function setMobileTitle(title) {
+    const el = document.getElementById('mobile-title');
+    if (el) el.textContent = title;
+}
+
 function loadOverview() {
     setActiveButton('overview');
+    setMobileTitle('Visão Geral');
     const content = document.getElementById('main-content');
     content.innerHTML = `
     <div class="fade-in">
-        <h2 class="font-serif-title text-4xl text-stone-900 mb-6 border-b-4 border-blue-600 inline-block pb-2">O Arquiteto: Habilidades 2030</h2>
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200 mb-10 text-lg text-stone-700 leading-relaxed border-l-4 border-l-blue-500">
+        <h2 class="font-serif-title text-3xl md:text-4xl text-stone-900 mb-6 border-b-4 border-blue-600 inline-block pb-2">O Arquiteto: Habilidades 2030</h2>
+        <div class="bg-white p-5 md:p-6 rounded-xl shadow-sm border border-stone-200 mb-8 text-base md:text-lg text-stone-700 leading-relaxed border-l-4 border-l-blue-500">
             <p>${overviewData.intro}</p>
         </div>
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
-                <h3 class="text-xl font-bold text-stone-800 mb-2">Equilíbrio Global: BR vs. EUA</h3>
-                <p class="text-sm text-stone-500 mb-6">Priorização das 10 habilidades conforme o mercado.</p>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-stone-200">
+                <h3 class="text-lg font-bold text-stone-800 mb-1">Equilíbrio Global: BR vs. EUA</h3>
+                <p class="text-sm text-stone-500 mb-4">Priorização das 10 habilidades conforme o mercado.</p>
                 <div class="chart-container"><canvas id="overviewChart"></canvas></div>
             </div>
-            <div class="space-y-6">
-                <div class="bg-stone-900 text-stone-100 p-6 rounded-xl shadow-md">
-                    <h4 class="text-amber-500 font-bold uppercase tracking-wider text-sm mb-2">Insight do Arquiteto</h4>
-                    <p class="text-lg italic">"Antes de ensinar a ferramenta, ensine o conceito. Uma equipe que entende o 'porquê' domina qualquer 'como'."</p>
+            <div class="space-y-4">
+                <div class="bg-stone-900 text-stone-100 p-5 rounded-xl shadow-md">
+                    <h4 class="text-amber-500 font-bold uppercase tracking-wider text-xs mb-2">Insight do Arquiteto</h4>
+                    <p class="text-base italic">"Antes de ensinar a ferramenta, ensine o conceito. Uma equipe que entende o 'porquê' domina qualquer 'como'."</p>
                 </div>
-                <div class="bg-stone-100 p-6 rounded-xl border border-stone-200">
+                <div class="bg-stone-100 p-5 rounded-xl border border-stone-200">
                     <h4 class="text-stone-800 font-bold mb-3">Como Navegar</h4>
                     <ul class="text-sm text-stone-600 space-y-2">
-                        <li>▸ Escolha uma habilidade no menu lateral.</li>
+                        <li>▸ Escolha uma habilidade no menu ${window.innerWidth < 1024 ? '(ícone ☰)' : 'lateral'}.</li>
                         <li>▸ Veja a <b>Definição Central</b> (O que é?).</li>
                         <li>▸ Use a <b>Metáfora</b> para gerar conexão emocional.</li>
                         <li>▸ Foque nos <b>20%</b> que trazem o resultado.</li>
@@ -231,69 +291,72 @@ function loadOverview() {
         </div>
     </div>`;
     setTimeout(renderRadarChart, 100);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function loadSkill(id) {
     setActiveButton(id);
     const data = skillsData.find(s => s.id === id);
     const related = skillsData.find(s => s.id === data.related);
+    setMobileTitle(data.name);
     const content = document.getElementById('main-content');
     content.innerHTML = `
     <div class="fade-in">
-        <div class="mb-8">
-            <span class="text-sm font-bold text-blue-600 uppercase tracking-widest">Habilidade em Destaque</span>
-            <h2 class="font-serif-title text-4xl text-stone-900 mt-1 flex items-center gap-4">
-                <span>${data.icon}</span> ${data.name}
+        <div class="mb-6">
+            <span class="text-xs font-bold text-blue-600 uppercase tracking-widest">Habilidade em Destaque</span>
+            <h2 class="font-serif-title text-3xl md:text-4xl text-stone-900 mt-1 flex items-center gap-3 flex-wrap">
+                <span>${data.icon}</span><span>${data.name}</span>
             </h2>
         </div>
-        <div class="bg-blue-600 text-white p-8 rounded-xl shadow-lg mb-10 relative overflow-hidden">
+        <div class="bg-blue-600 text-white p-6 md:p-8 rounded-xl shadow-lg mb-8 relative overflow-hidden">
             <div class="relative z-10">
                 <h3 class="text-blue-200 uppercase tracking-widest font-bold text-xs mb-2">Conceito Central</h3>
-                <p class="text-2xl font-serif-title leading-snug">${data.concept}</p>
+                <p class="text-xl md:text-2xl font-serif-title leading-snug">${data.concept}</p>
             </div>
-            <div class="absolute right-[-20px] bottom-[-20px] text-white opacity-10 text-9xl">${data.icon}</div>
+            <div class="absolute right-[-10px] bottom-[-10px] text-white opacity-10 text-8xl">${data.icon}</div>
         </div>
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
-            <div class="lg:col-span-2 bg-stone-900 p-6 rounded-xl shadow-lg text-white">
-                <h4 class="text-amber-500 font-bold uppercase tracking-wider text-sm mb-4">Impacto em Performance de Times</h4>
-                <div class="chart-container" style="height: 250px;"><canvas id="skillChart"></canvas></div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <div class="lg:col-span-2 bg-stone-900 p-5 rounded-xl shadow-lg text-white">
+                <h4 class="text-amber-500 font-bold uppercase tracking-wider text-xs mb-3">Impacto em Performance de Times</h4>
+                <div class="chart-container" style="height:220px;"><canvas id="skillChart"></canvas></div>
             </div>
-            <div class="bg-amber-50 border border-amber-200 p-6 rounded-xl flex flex-col justify-center">
-                <h4 class="text-amber-800 font-bold mb-2">O Ponto Cego</h4>
-                <p class="text-lg text-stone-800 font-serif-title italic">"${data.blindspot}"</p>
+            <div class="bg-amber-50 border border-amber-200 p-5 rounded-xl">
+                <h4 class="text-amber-800 font-bold mb-2 text-sm">O Ponto Cego</h4>
+                <p class="text-base text-stone-800 font-serif-title italic">"${data.blindspot}"</p>
             </div>
         </div>
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200 mb-6">
-            <h3 class="font-serif-title text-2xl text-stone-800 font-bold mt-0 mb-4 pb-2 border-b-2 border-stone-200">
+        <div class="bg-white p-5 md:p-6 rounded-xl shadow-sm border border-stone-200 mb-5">
+            <h3 class="font-serif-title text-xl font-bold mb-4 pb-2 border-b-2 border-stone-200">
                 <span class="text-blue-600">01.</span> Entendendo Facilmente
             </h3>
-            <p class="text-stone-700 text-lg leading-relaxed mb-6"><b>Metáfora:</b> ${data.metaphor}</p>
-            <div class="bg-stone-50 border-l-4 border-stone-800 p-6 rounded text-stone-700 italic text-lg">"${data.joke}"</div>
+            <p class="text-stone-700 text-base leading-relaxed mb-5"><b>Metáfora:</b> ${data.metaphor}</p>
+            <div class="bg-stone-50 border-l-4 border-stone-800 p-5 rounded text-stone-700 italic text-base">"${data.joke}"</div>
         </div>
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200 mb-6">
-            <h3 class="font-serif-title text-2xl text-stone-800 font-bold mt-0 mb-4 pb-2 border-b-2 border-stone-200">
+        <div class="bg-white p-5 md:p-6 rounded-xl shadow-sm border border-stone-200 mb-5">
+            <h3 class="font-serif-title text-xl font-bold mb-4 pb-2 border-b-2 border-stone-200">
                 <span class="text-blue-600">02.</span> Explicação do Arquiteto
             </h3>
-            <p class="text-stone-700 text-lg leading-relaxed">${data.explanation}</p>
+            <p class="text-stone-700 text-base leading-relaxed">${data.explanation}</p>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200 border-l-4 border-l-blue-600">
-                <h3 class="font-serif-title text-xl font-bold mb-4 text-stone-800">A Regra 80/20</h3>
-                <ul class="space-y-3 text-stone-800">
-                    ${data.pareto.map(item => `<li class="flex items-start gap-2"><span class="text-blue-600 font-bold">▸</span> ${item}</li>`).join('')}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-stone-200 border-l-4 border-l-blue-600">
+                <h3 class="font-serif-title text-lg font-bold mb-3 text-stone-800">A Regra 80/20</h3>
+                <ul class="space-y-2 text-stone-800">
+                    ${data.pareto.map(item => `<li class="flex items-start gap-2 text-sm"><span class="text-blue-600 font-bold mt-0.5">▸</span><span>${item}</span></li>`).join('')}
                 </ul>
             </div>
-            <div class="bg-stone-900 text-white p-6 rounded-xl shadow-sm">
-                <h3 class="font-serif-title text-xl font-bold mb-4 text-blue-400">Assunto Relacionado</h3>
-                <p class="text-stone-300 mb-4">Aprofunde em: <b>${related ? related.name : ''}</b></p>
-                <button onclick="loadSkill('${data.related}')" class="text-xs uppercase bg-blue-600 px-4 py-2 rounded font-bold hover:bg-blue-500 transition-colors">
+            <div class="bg-stone-900 text-white p-5 rounded-xl shadow-sm">
+                <h3 class="font-serif-title text-lg font-bold mb-3 text-blue-400">Assunto Relacionado</h3>
+                <p class="text-stone-300 mb-4 text-sm">Aprofunde em: <b>${related ? related.name : ''}</b></p>
+                <button onclick="loadSkill('${data.related}')"
+                    class="text-xs uppercase bg-blue-600 px-4 py-2 rounded font-bold hover:bg-blue-500 transition-colors">
                     Entender Agora
                 </button>
             </div>
         </div>
     </div>`;
     setTimeout(() => renderBarChart(data.perfBR, data.perfUS), 100);
-    document.querySelector('main').scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function renderRadarChart() {
@@ -310,8 +373,8 @@ function renderRadarChart() {
         },
         options: {
             responsive: true, maintainAspectRatio: false,
-            scales: { r: { angleLines: { display: true }, grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { display: false }, pointLabels: { font: { size: 10 } } } },
-            plugins: { legend: { position: 'bottom' } }
+            scales: { r: { angleLines: { display: true }, grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { display: false }, pointLabels: { font: { size: window.innerWidth < 768 ? 8 : 10 } } } },
+            plugins: { legend: { position: 'bottom', labels: { font: { size: 12 } } } }
         }
     });
 }
@@ -334,7 +397,7 @@ function renderBarChart(br, us) {
                 x: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#a8a29e' }, max: 50 },
                 y: { ticks: { display: false } }
             },
-            plugins: { legend: { labels: { color: '#fff' } } }
+            plugins: { legend: { labels: { color: '#fff', font: { size: 12 } } } }
         }
     });
 }
